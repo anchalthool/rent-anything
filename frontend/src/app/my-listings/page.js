@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ListingCard from "@/components/ListingCard";
+import OwnerListingCard from "@/components/OwnerListingCard";
+import Link from "next/link";
 
 export default function MyListingsPage() {
   const [listings, setListings] = useState([]);
@@ -34,11 +35,11 @@ export default function MyListingsPage() {
   return (
     <main className="listings-page">
       <div className="listings-header">
-        <p className="hero-eyebrow">Your inventory</p>
-        <h1>My Listings</h1>
-        <a href="/listings/new" className="primary-button">
-      + Add Listing
-    </a>
+        <h2>My Listings</h2>
+        <p></p>
+        <Link href="/listings/new" className="primary-button">
+          + Add Listing
+        </Link>
       </div>
 
       {message && <p>{message}</p>}
@@ -49,10 +50,7 @@ export default function MyListingsPage() {
 
       <div className="listings-grid">
         {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            listing={listing}
-          />
+          <OwnerListingCard key={listing.id} listing={listing} />
         ))}
       </div>
     </main>

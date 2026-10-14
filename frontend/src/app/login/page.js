@@ -1,22 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
+  const router = useRouter();
+
   async function handleLogin(e) {
     e.preventDefault();
 
     const res = await fetch("http://localhost:3000/auth/login", {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         email,
         password,
@@ -31,8 +32,11 @@ export default function LoginPage() {
     }
 
     localStorage.setItem("token", data.token);
+    window.dispatchEvent(new Event("authChanged"));
 
     setMessage("Login successful!");
+
+    router.push("/listings");
   }
 
   return (

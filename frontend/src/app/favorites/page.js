@@ -40,7 +40,7 @@ export default function FavoritesPage() {
 
       {message && <p>{message}</p>}
 
-      <div className="listings-grid">
+      <div className="listings-grid favorites-grid">
         {favorites.map((listing) => (
   <ListingCard
     key={listing.id}

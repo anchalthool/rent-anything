@@ -1,4 +1,6 @@
+import Image from "next/image";
 import BookingForm from "@/components/BookingForm";
+
 export default async function ListingDetails({ params }) {
   const { listingId } = await params;
 
@@ -18,8 +20,24 @@ export default async function ListingDetails({ params }) {
   return (
     <main className="listing-details-page">
       <div className="listing-details-card">
+
         <div className="listing-details-image">
-          No image yet
+          {listing.image_url ? (
+            <Image
+              src={listing.image_url}
+              alt={listing.title}
+              width={640}
+              height={420}
+              unoptimized
+              style={{
+                width: "100%",
+                height: "auto",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            "No image yet"
+          )}
         </div>
 
         <div className="listing-details-content">
@@ -39,6 +57,7 @@ export default async function ListingDetails({ params }) {
 
           <BookingForm listingId={listing.id} />
         </div>
+
       </div>
     </main>
   );

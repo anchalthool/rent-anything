@@ -1,30 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowUpRight, Layers } from "lucide-react";
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    function checkAuth() {
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+    }
+
+    checkAuth();
+
+    window.addEventListener("authChanged", checkAuth);
+
+    return () => {
+      window.removeEventListener("authChanged", checkAuth);
+    };
   }, []);
 
   function handleLogout() {
     localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    window.location.href = "/";
+
+    window.dispatchEvent(new Event("authChanged"));
+
+    router.push("/");
   }
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" aria-label="Main navigation">
       <div className="navbar-logo">
-        <a href="/">RentAnything</a>
+        <Link href="/" aria-label="RentAnything home"><span className="brand-mark"><Layers size={22} /></span>rentanything<span className="brand-dot">.</span></Link>
       </div>
 
       <div className="navbar-links">
-        <a href="/">Home</a>
-        <a href="/listings">Browse</a>
+        <Link href="/" aria-current={pathname === "/" ? "page" : undefined}>Home</Link>
+        <Link href="/listings" aria-current={pathname.startsWith("/listings") ? "page" : undefined}>Explore rentals</Link>
 
         {isLoggedIn && (
           <>
@@ -51,7 +68,7 @@ export default function Navbar() {
               href="/register"
               className="signup-button"
             >
-              Sign Up
+              Get started <ArrowUpRight size={16} />
             </a>
           </>
         )}

@@ -1,29 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const categoryController = require("../controllers/categoryController");
 
-const pool = require("../db/db");
-
-
-router.get("/", async (req, res) => {
-
-  try {
-
-    const result = await pool.query(
-      "SELECT * FROM categories ORDER BY id"
-    );
-
-    res.json(result.rows);
-
-  } catch (error) {
-
-    console.log(error);
-
-    res.status(500).json({
-      message: "Something went wrong"
-    });
-
-  }
-
-});
+router.get("/", categoryController.getAllCategories);
 
 module.exports = router;
