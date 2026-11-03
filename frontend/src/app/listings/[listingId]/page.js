@@ -22,9 +22,9 @@ export default async function ListingDetails({ params }) {
       <div className="listing-details-card">
 
         <div className="listing-details-image">
-          {listing.image_url ? (
+          {listing.image_view_url ? (
             <Image
-              src={listing.image_url}
+              src={listing.image_view_url}
               alt={listing.title}
               width={640}
               height={420}

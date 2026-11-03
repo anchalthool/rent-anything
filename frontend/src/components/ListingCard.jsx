@@ -68,9 +68,9 @@ export default function ListingCard({
   return (
     <div className="listing-card">
       <div className="listing-image">
-        {listing.image_url ? (
+        {listing.image_view_url ? (
   <Image
-    src={listing.image_url}
+    src={listing.image_view_url}
     width={640}
     height={480}
     unoptimized

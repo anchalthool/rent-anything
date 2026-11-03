@@ -1,24 +1,42 @@
 const pool = require("../db/db");
 
+
 async function findByUserId(userId) {
   return pool.query(
-    `SELECT
-        listings.id,
-        listings.title,
-        listings.daily_price,
-        listings.city,
-        categories.name AS category
-       FROM favorites
+    `
+    SELECT
+      listings.id,
+      listings.title,
+      listings.daily_price,
+      listings.city,
 
-       JOIN listings
-       ON favorites.listing_id = listings.id
+      categories.name AS category,
 
-       JOIN categories
-       ON listings.category_id = categories.id
+      (
+        SELECT COALESCE(
+          li.storage_path,
+          li.image_url
+        )
+        FROM listing_images li
+        WHERE li.listing_id = listings.id
+        ORDER BY
+          li.is_primary DESC,
+          li.position ASC
+        LIMIT 1
+      ) AS image_url
 
-       WHERE favorites.user_id = $1
+    FROM favorites
 
-       ORDER BY listings.id DESC`,
+    JOIN listings
+      ON favorites.listing_id = listings.id
+
+    JOIN categories
+      ON listings.category_id = categories.id
+
+    WHERE favorites.user_id = $1
+
+    ORDER BY listings.id DESC
+    `,
     [userId]
   );
 }

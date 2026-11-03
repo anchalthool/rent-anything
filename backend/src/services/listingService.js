@@ -93,57 +93,70 @@ async function getStats(
 // GET LISTING BY ID
 // ==================================================
 
+
 async function getListingById(listingId) {
   const cacheKey = `listing:${listingId}`;
+  let listing = null;
 
+  // 1. Try Redis first
   try {
-    const cachedListing =
-      await redisClient.get(cacheKey);
+    const cachedListing = await redisClient.get(cacheKey);
 
     if (cachedListing) {
       console.log("CACHE HIT:", cacheKey);
-
-      return JSON.parse(cachedListing);
+      listing = JSON.parse(cachedListing);
     }
-
-    console.log("CACHE MISS:", cacheKey);
-
   } catch (error) {
-    console.error(
-      "Redis GET failed:",
-      error
-    );
+    console.error("Redis GET failed:", error);
   }
 
-  const listing =
-    await listingRepository.findById(
-      listingId
-    );
-
+  // 2. Fetch from PostgreSQL if not cached
   if (!listing) {
-    return null;
+    console.log("CACHE MISS:", cacheKey);
+
+    listing = await listingRepository.findById(listingId);
+
+    if (!listing) {
+      return null;
+    }
+
+    try {
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(listing),
+        { EX: 60 }
+      );
+    } catch (error) {
+      console.error("Redis SET failed:", error);
+    }
+  }
+
+  // 3. Generate an image viewing URL
+  if (!listing.image_url) {
+    return {
+      ...listing,
+      image_view_url: null
+    };
   }
 
   try {
-    await redisClient.set(
-      cacheKey,
-      JSON.stringify(listing),
-      {
-        EX: 60,
-      }
-    );
+    const { signedUrl } =
+      await uploadService.createViewUrl(listing.image_url);
 
-    console.log("CACHED:", cacheKey);
-
+    return {
+      ...listing,
+      image_view_url: signedUrl
+    };
   } catch (error) {
-    console.error(
-      "Redis SET failed:",
-      error
-    );
-  }
+    console.error("Image URL generation failed:", error);
 
-  return listing;
+    return {
+      ...listing,
+      image_view_url: null
+    };
+  }
 }
+
 
 // ==================================================
 // CREATE LISTING

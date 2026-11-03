@@ -12,38 +12,38 @@ async function findAll({
   excludeOwnerId,
 }) {
   let query = `
-    SELECT
-      listings.id,
-      listings.title,
-      listings.daily_price,
-      listings.city,
+    
+SELECT
+  listings.id,
+  listings.title,
+  listings.daily_price,
+  listings.city,
 
-      (
-        SELECT li.image_url
-        FROM listing_images li
-        WHERE li.listing_id = listings.id
-        ORDER BY
-          li.is_primary DESC,
-          li.position ASC
-        LIMIT 1
-      ) AS image_url,
+  (
+    SELECT COALESCE(li.storage_path, li.image_url)
+    FROM listing_images li
+    WHERE li.listing_id = listings.id
+    ORDER BY
+      li.is_primary DESC,
+      li.position ASC
+    LIMIT 1
+  ) AS image_url,
 
-      categories.name AS category,
+  categories.name AS category,
 
-      users.id AS owner_id,
-      users.name AS owner_name
+  users.id AS owner_id,
+  users.name AS owner_name
 
-    FROM listings
+FROM listings
 
-    JOIN categories
-      ON listings.category_id =
-         categories.id
+JOIN categories
+  ON listings.category_id = categories.id
 
-    JOIN users
-      ON listings.owner_id =
-         users.id
+JOIN users
+  ON listings.owner_id = users.id
 
-    WHERE 1 = 1
+WHERE 1 = 1
+
   `;
 
   const values = [];
@@ -274,22 +274,37 @@ async function findStats(listingId, ownerId) {
 // FIND BY ID
 // ==================================================
 
+
 async function findById(listingId) {
   const result = await pool.query(
     `
-      SELECT *
-      FROM listings
-      WHERE id = $1
-      `,
-    [listingId],
+    SELECT
+      l.*,
+
+      (
+        SELECT COALESCE(li.storage_path, li.image_url)
+        FROM listing_images li
+        WHERE li.listing_id = l.id
+        ORDER BY
+          li.is_primary DESC,
+          li.position ASC
+        LIMIT 1
+      ) AS image_url
+
+    FROM listings l
+    WHERE l.id = $1
+    `,
+    [listingId]
   );
 
   return result.rows[0] || null;
 }
 
+
 // ==================================================
 // CREATE LISTING
 // ==================================================
+
 
 async function create({
   title,
@@ -299,33 +314,47 @@ async function create({
   ownerId,
   imageUrl,
 }) {
-  const result = await pool.query(
-    `
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // Create the listing
+    const result = await client.query(
+      `
       INSERT INTO listings
-      (
-        title,
-        category_id,
-        daily_price,
-        city,
-        owner_id,
-        image_url
-      )
-
-      VALUES (
-        $1,
-        $2,
-        $3,
-        $4,
-        $5,
-        $6
-      )
-
+        (title, category_id, daily_price, city, owner_id)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-    [title, categoryId, dailyPrice, city, ownerId, imageUrl],
-  );
+      [title, categoryId, dailyPrice, city, ownerId]
+    );
 
-  return result.rows[0];
+    const listing = result.rows[0];
+
+    // Save the Supabase image path
+    if (imageUrl) {
+      await client.query(
+        `
+        INSERT INTO listing_images
+          (listing_id, image_url, storage_path, position, is_primary)
+        VALUES ($1, $2, $3, 0, TRUE)
+        `,
+        [listing.id, imageUrl, imageUrl]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    return listing;
+
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+
+  } finally {
+    client.release();
+  }
 }
 
 // ==================================================

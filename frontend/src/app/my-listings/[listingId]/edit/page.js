@@ -23,12 +23,9 @@ export default function EditListingPage() {
   useEffect(() => {
     async function loadListing() {
       try {
-        const res = await fetch(
-          `http://localhost:3000/listings/${listingId}`,
-          {
-            cache: "no-store",
-          }
-        );
+        const res = await fetch(`http://localhost:3000/listings/${listingId}`, {
+          cache: "no-store",
+        });
 
         if (!res.ok) {
           throw new Error("Failed to load listing");
@@ -86,16 +83,14 @@ export default function EditListingPage() {
             dailyPrice: Number(dailyPrice),
             city,
           }),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Failed to update listing"
+          data.message || data.error || "Failed to update listing",
         );
       }
 
@@ -115,15 +110,14 @@ export default function EditListingPage() {
             },
 
             body: formData,
-          }
+          },
         );
 
         const imageData = await imageResponse.json();
 
         if (!imageResponse.ok) {
           throw new Error(
-            imageData.error ||
-              "Listing updated but image upload failed"
+            imageData.error || "Listing updated but image upload failed",
           );
         }
       }
@@ -149,9 +143,7 @@ export default function EditListingPage() {
       <div className="edit-listing-card">
         <div className="edit-listing-header">
           <div>
-            <p className="edit-listing-eyebrow">
-              Manage listing
-            </p>
+            <p className="edit-listing-eyebrow">Manage listing</p>
 
             <h1>Edit Listing</h1>
           </div>
@@ -159,9 +151,7 @@ export default function EditListingPage() {
           <button
             type="button"
             className="secondary-button"
-            onClick={() =>
-              router.push("/my-listings")
-            }
+            onClick={() => router.push("/my-listings")}
           >
             Back
           </button>
@@ -171,19 +161,14 @@ export default function EditListingPage() {
           <section className="edit-listing-form-section">
             <h2>Listing details</h2>
 
-            <form
-              onSubmit={handleSave}
-              className="edit-listing-form"
-            >
+            <form onSubmit={handleSave} className="edit-listing-form">
               <div className="form-group">
                 <label>Title</label>
 
                 <input
                   type="text"
                   value={title}
-                  onChange={(e) =>
-                    setTitle(e.target.value)
-                  }
+                  onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
 
@@ -193,9 +178,7 @@ export default function EditListingPage() {
                 <input
                   type="number"
                   value={dailyPrice}
-                  onChange={(e) =>
-                    setDailyPrice(e.target.value)
-                  }
+                  onChange={(e) => setDailyPrice(e.target.value)}
                 />
               </div>
 
@@ -205,9 +188,7 @@ export default function EditListingPage() {
                 <input
                   type="text"
                   value={city}
-                  onChange={(e) =>
-                    setCity(e.target.value)
-                  }
+                  onChange={(e) => setCity(e.target.value)}
                 />
               </div>
 
@@ -215,39 +196,29 @@ export default function EditListingPage() {
                 <h2>Listing image</h2>
 
                 <div className="edit-image-preview">
-                  {imagePreview ||
-                  listing.image_url ? (
+                  {imagePreview || listing.image_view_url ? (
                     <img
-                      src={
-                        imagePreview ||
-                        listing.image_url
-                      }
+                      src={imagePreview || listing.image_view_url}
                       alt={listing.title}
                     />
                   ) : (
-                    <div className="edit-image-placeholder">
-                      No image yet
-                    </div>
+                    <div className="edit-image-placeholder">No image yet</div>
                   )}
                 </div>
 
                 <label className="upload-button">
                   Choose New Image
-
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    onChange={
-                      handleImageSelect
-                    }
+                    onChange={handleImageSelect}
                     hidden
                   />
                 </label>
 
                 {selectedImage && (
                   <p className="selected-file-name">
-                    Selected:{" "}
-                    {selectedImage.name}
+                    Selected: {selectedImage.name}
                   </p>
                 )}
               </div>
@@ -257,9 +228,7 @@ export default function EditListingPage() {
                 className="primary-button"
                 disabled={saving}
               >
-                {saving
-                  ? "Saving..."
-                  : "Save Changes"}
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </form>
           </section>
