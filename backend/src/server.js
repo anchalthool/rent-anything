@@ -34,7 +34,7 @@ app.use("/listings", listingsRoutes);
 app.use("/categories", categoriesRoutes);
 app.use("/bookings", bookingsRoutes);
 app.use("/favorites", favoritesRoutes);
-app.use("/auth", authRoutes);
+// app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/reviews", reviewsRoutes);
 app.use("/payments", paymentRoutes);
@@ -50,8 +50,8 @@ redisClient.get("test").then((value) => {
 });
 
 
-app.listen(3000, () => {
+app.listen(3002, () => {
   console.log(
-    "Server running at http://localhost:3000"
+    "Server running at http://localhost:3002"
   );
 });
